@@ -13,22 +13,6 @@ var isArray = require('./utils').isArray
 var cloneDeep = require('./utils').cloneDeep
 
 
-/**
- * Dereferences a value, if its a mutable value makes a copy
- */
-function deref(val) {
-  if (isImmutable(val)) {
-    // cache hit
-    return val
-  } else if (isArray(val) || isObject(val)){
-    // its a mutable value so clone it deep
-    return cloneDeep(val)
-  } else {
-    // its a plain JS immutable type, eg: string, number
-    return val
-  }
-}
-
 class Evaluator {
   constructor() {
     /**
@@ -70,7 +54,7 @@ class Evaluator {
     // if the value is cached for this dispatch cycle, return the cached value
     if (this.__isCached(state, keyPathOrGetter)) {
       // Cache hit
-      return deref(this.__cachedGetters.getIn([code, 'value']))
+      return this.__cachedGetters.getIn([code, 'value'])
 
     } else if (this.__hasStaleValue(state, keyPathOrGetter)) {
       var prevValue = this.__cachedGetters.getIn([code, 'value'])
@@ -83,7 +67,7 @@ class Evaluator {
       // since Getter is a pure functions if the args are the same its a cache hit
       if (isEqual(prevArgs, currArgs)) {
         this.__cacheValue(state, keyPathOrGetter, prevArgs, prevValue)
-        return deref(prevValue)
+        return prevValue
       }
     }
     // no cache hit evaluate
